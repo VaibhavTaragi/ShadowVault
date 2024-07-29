@@ -2,35 +2,44 @@ import React, { useEffect, useState } from 'react';
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { AiOutlineDelete } from "react-icons/ai";
 import { MdOutlineModeEdit } from "react-icons/md";
+import { FaRegCheckCircle } from "react-icons/fa";
+import { IoMdCloseCircleOutline } from "react-icons/io";
 
-
-const Card = ({ detail, setOpenId, openId }) => {
+const Card = ({ detail, setOpenId, openId, setpopup }) => {
     const [showMore, setShowMore] = useState(true);
-
-    useEffect(()=>{
-        if(openId === detail?.id) {
+    const [edit, setEdit] = useState(false);
+    const [editing, setEditing] = useState(edit && (detail.id === openId));
+    useEffect(() => {
+        if (openId === detail?.id) {
             setShowMore(false);
-        }else{
+        } else {
             setShowMore(true);
         }
-    },[openId]);
+    }, [openId]);
 
-    const handleShow = ()=>{
-        if(showMore){
+    useEffect(() => {
+        if (edit && (detail.id === openId)) {
+            setEditing(true);
+        } else {
+            setEditing(false);
+        }
+    }, [edit])
+
+    const handleShow = () => {
+        if (showMore) {
             setOpenId(detail?.id)
-        }else{
+        } else {
             setOpenId(null);
         }
     }
 
-    function getAge(birthdate) {
+    const getAge = (birthdate) => {
         const birthDate = new Date(birthdate);
         const today = new Date();
 
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDifference = today.getMonth() - birthDate.getMonth();
 
-        // Check if the birthdate has not occurred yet this year
         if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
             age--;
         }
@@ -43,7 +52,8 @@ const Card = ({ detail, setOpenId, openId }) => {
             <div className='flex justify-between items-center'>
                 <div className='flex items-center gap-4'>
                     <img src={detail?.picture} alt='Person Image' className='rounded-full w-12 border p-1' />
-                    <h2 className='font-semibold'>{detail?.first + " " + detail?.last}</h2>
+                    {!editing ? <h2 className='font-semibold'>{detail?.first + " " + detail?.last}</h2> : 
+                    <input type='text' value={detail?.first + " " + detail?.last}/>}
                 </div>
                 <div onClick={handleShow} className='text-xs cursor-pointer pt-2'>
                     {showMore ? <FaChevronDown /> : <FaChevronUp />}
@@ -69,10 +79,14 @@ const Card = ({ detail, setOpenId, openId }) => {
                     <p>{detail?.description}</p>
                 </div>
                 <div className='flex justify-end items-center'>
-                    <div className='flex gap-2'>
-                        <AiOutlineDelete className='text-red-500 cursor-pointer text-xl'/>
-                        <MdOutlineModeEdit className='text-blue-500 cursor-pointer text-xl'/>
-                    </div>
+                    {!editing ? (<div className='flex gap-2'>
+                        <AiOutlineDelete className='text-red-500 cursor-pointer text-xl' onClick={() => setpopup(true)} />
+                        {(getAge(detail?.dob) > 18) && <MdOutlineModeEdit className='text-blue-500 cursor-pointer text-xl' onClick={() => setEdit(true)} />}
+                    </div>) :
+                        (<div className='flex gap-2 items-center'>
+                            <IoMdCloseCircleOutline className='text-red-500 cursor-pointer text-xl' onClick={() => setEdit(false)} />
+                            <FaRegCheckCircle className='text-green-500 cursor-pointer text-lg' />
+                        </div>)}
                 </div>
             </div>}
         </div>
